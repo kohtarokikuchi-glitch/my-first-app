@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #00a0b0;
+  --color-primary-light: #00b8c4;
+  --color-text: #123b50;
+  --color-text-muted: #5e7a8a;
+  --color-text-light: #6c8b9a;
+  --color-bg-start: #e6f4f9;
+  --color-bg-end: #f5fbff;
+  --color-card-border: rgba(0, 123, 167, 0.08);
+  --color-badge-bg: rgba(0, 160, 176, 0.06);
+  --color-badge-text: #007f91;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
