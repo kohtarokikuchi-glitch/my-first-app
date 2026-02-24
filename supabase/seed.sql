@@ -79,3 +79,44 @@ INSERT INTO faq_items (question, answer, source, category) VALUES
   '人事部「通勤手当支給規程」第8条',
   '人事・労務'
 );
+
+-- FAQ 検索用スコアリング関数
+-- キーワードごとに question(3点) / answer(2点) / category(1点) の重み付きスコアを加算し、
+-- スコア降順で結果を返す。
+CREATE OR REPLACE FUNCTION search_faq(search_query text)
+RETURNS TABLE (
+  id         uuid,
+  question   text,
+  answer     text,
+  source     text,
+  category   text,
+  score      int
+)
+LANGUAGE sql STABLE
+AS $$
+  SELECT
+    f.id,
+    f.question,
+    f.answer,
+    f.source,
+    f.category,
+    sum(
+      CASE WHEN f.question ILIKE '%' || kw.word || '%' THEN 3 ELSE 0 END +
+      CASE WHEN f.answer   ILIKE '%' || kw.word || '%' THEN 2 ELSE 0 END +
+      CASE WHEN f.category ILIKE '%' || kw.word || '%' THEN 1 ELSE 0 END
+    )::int AS score
+  FROM faq_items f
+  CROSS JOIN unnest(
+    array_remove(string_to_array(trim(search_query), ' '), '')
+  ) AS kw(word)
+  GROUP BY f.id, f.question, f.answer, f.source, f.category
+  HAVING sum(
+    CASE WHEN f.question ILIKE '%' || kw.word || '%' THEN 3 ELSE 0 END +
+    CASE WHEN f.answer   ILIKE '%' || kw.word || '%' THEN 2 ELSE 0 END +
+    CASE WHEN f.category ILIKE '%' || kw.word || '%' THEN 1 ELSE 0 END
+  ) > 0
+  ORDER BY score DESC;
+$$;
+
+-- anon ユーザーに実行権限を付与
+GRANT EXECUTE ON FUNCTION search_faq(text) TO anon;

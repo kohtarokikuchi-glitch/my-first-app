@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { searchFAQ } from "./lib/search";
 
 const EXAMPLE_QUESTIONS = [
@@ -15,6 +15,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+  const composingRef = useRef(false);
 
   async function handleSearch(searchQuery) {
     const q = searchQuery || query;
@@ -40,7 +41,7 @@ export default function Home() {
   }
 
   function handleKeyDown(e) {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !composingRef.current) {
       handleSearch();
     }
   }
@@ -89,6 +90,8 @@ export default function Home() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
+              onCompositionStart={() => { composingRef.current = true; }}
+              onCompositionEnd={() => { composingRef.current = false; }}
               placeholder="質問を入力してください..."
               className="flex-1 bg-transparent text-base text-text outline-none placeholder:text-text-light"
               aria-label="FAQ検索"
