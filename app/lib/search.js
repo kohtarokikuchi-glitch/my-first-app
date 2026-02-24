@@ -1,8 +1,8 @@
-import { faqData } from "./faq-data";
+import { getSupabase } from "./supabase";
 
 /**
- * FAQ を検索し、関連度順にソートして返す。
- * 後で Supabase API に差し替え可能なインターフェース。
+ * FAQ を検索し、結果を返す。
+ * Supabase の ilike フィルタでキーワードマッチングを行う。
  *
  * @param {string} query - 検索クエリ
  * @returns {Promise<{ results: Array, query: string }>}
@@ -12,39 +12,28 @@ export async function searchFAQ(query) {
     return { results: [], query };
   }
 
-  const normalizedQuery = query.toLowerCase().trim();
-  const keywords = normalizedQuery.split(/\s+/).filter(Boolean);
+  const keywords = query.trim().split(/\s+/).filter(Boolean);
 
-  const scored = faqData.map((item) => {
-    const questionLower = item.question.toLowerCase();
-    const answerLower = item.answer.toLowerCase();
-    const categoryLower = item.category.toLowerCase();
+  // 各キーワードに対して question / answer / category いずれかに
+  // 部分一致する条件を OR で結合
+  const filters = keywords.map(
+    (kw) => `question.ilike.%${kw}%,answer.ilike.%${kw}%,category.ilike.%${kw}%`
+  );
 
-    let score = 0;
+  let dbQuery = getSupabase()
+    .from("faq_items")
+    .select("id, question, answer, source, category");
 
-    // 完全一致（質問文）: 高スコア
-    if (questionLower.includes(normalizedQuery)) {
-      score += 10;
-    }
+  for (const filter of filters) {
+    dbQuery = dbQuery.or(filter);
+  }
 
-    // 完全一致（回答文）
-    if (answerLower.includes(normalizedQuery)) {
-      score += 5;
-    }
+  const { data, error } = await dbQuery;
 
-    // キーワード別のマッチング
-    for (const kw of keywords) {
-      if (questionLower.includes(kw)) score += 3;
-      if (answerLower.includes(kw)) score += 1;
-      if (categoryLower.includes(kw)) score += 2;
-    }
+  if (error) {
+    console.error("Supabase search error:", error);
+    return { results: [], query };
+  }
 
-    return { ...item, score };
-  });
-
-  const results = scored
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score);
-
-  return { results, query };
+  return { results: data ?? [], query };
 }
