@@ -47,7 +47,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen items-start justify-center px-4 py-12 sm:py-20">
+    <div className="flex min-h-screen items-start justify-center px-3 py-8 sm:px-4 sm:py-20">
       <main className="w-full max-w-lg">
         {/* ヘッダー: バッジ + タイトル */}
         <div className="mb-8 text-center">
@@ -58,7 +58,7 @@ export default function Home() {
             />
             <span>Medical Horizon</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-wide text-text">
+          <h1 className="text-xl font-bold tracking-wide text-text sm:text-2xl">
             FAQ検索ボット
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-text-muted">
@@ -68,7 +68,7 @@ export default function Home() {
 
         {/* 検索バー */}
         <div
-          className="relative rounded-2xl bg-white shadow-[0_18px_45px_rgba(0,73,116,0.15)] border border-card-border"
+          className="relative rounded-2xl bg-white shadow-[0_18px_45px_rgba(0,73,116,0.15)] border border-card-border transition-shadow focus-within:shadow-[0_18px_45px_rgba(0,73,116,0.22)] focus-within:border-primary/30"
         >
           <div className="flex items-center px-4 py-3">
             {/* 虫眼鏡アイコン */}
@@ -99,7 +99,7 @@ export default function Home() {
             {query && (
               <button
                 onClick={() => setQuery("")}
-                className="ml-2 text-text-light hover:text-text"
+                className="ml-2 text-text-light hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
                 aria-label="入力をクリア"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,46 +110,78 @@ export default function Home() {
             <button
               onClick={() => handleSearch()}
               disabled={isSearching || !query.trim()}
-              className="ml-2 rounded-xl bg-gradient-to-br from-primary to-primary-light px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(0,160,176,0.4)] transition-opacity disabled:opacity-40"
+              className="ml-2 rounded-xl bg-gradient-to-br from-primary to-primary-light px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(0,160,176,0.4)] transition-all disabled:opacity-40 hover:brightness-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
             >
-              {isSearching ? "検索中..." : "検索"}
+              {isSearching ? (
+                <span className="flex items-center gap-1.5">
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  検索中
+                </span>
+              ) : "検索"}
             </button>
           </div>
         </div>
 
-        {/* 検索結果 */}
-        {result && (
+        {/* スケルトンローディング */}
+        {isSearching && (
           <div className="mt-6 space-y-4">
-            {result.results.length > 0 ? (
-              result.results.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl bg-white p-6 shadow-[0_18px_45px_rgba(0,73,116,0.15)] border border-card-border"
-                >
-                  {/* カテゴリバッジ */}
-                  <span className="mb-3 inline-block rounded-full bg-badge-bg px-2.5 py-0.5 text-xs font-semibold text-badge-text">
-                    {item.category}
-                  </span>
-
-                  {/* 質問 */}
-                  <h2 className="mb-3 text-base font-bold text-text">
-                    {item.question}
-                  </h2>
-
-                  {/* 回答 */}
-                  <p className="mb-4 text-sm leading-relaxed text-text-muted">
-                    {item.answer}
-                  </p>
-
-                  {/* 出典 */}
-                  <div className="rounded-xl bg-[#f3fbfe] border border-[rgba(0,134,179,0.12)] px-3 py-2 text-xs text-text-light">
-                    <span className="font-semibold text-badge-text">出典：</span>
-                    {item.source}
-                  </div>
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className="rounded-2xl bg-white p-4 sm:p-6 shadow-[0_18px_45px_rgba(0,73,116,0.15)] border border-card-border animate-pulse"
+              >
+                <div className="mb-3 h-5 w-20 rounded-full bg-gray-200" />
+                <div className="mb-3 h-5 w-3/4 rounded bg-gray-200" />
+                <div className="space-y-2">
+                  <div className="h-4 w-full rounded bg-gray-100" />
+                  <div className="h-4 w-5/6 rounded bg-gray-100" />
                 </div>
-              ))
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 検索結果 */}
+        {result && !isSearching && (
+          <div className="mt-6 space-y-4" key={result.query}>
+            {result.results.length > 0 ? (
+              <>
+                <p className="text-center text-sm text-text-muted">
+                  {result.results.length}件見つかりました
+                </p>
+                {result.results.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className={`rounded-2xl bg-white p-4 sm:p-6 shadow-[0_18px_45px_rgba(0,73,116,0.15)] border border-card-border transition-shadow hover:shadow-[0_24px_55px_rgba(0,73,116,0.2)] animate-fade-in-up delay-${index}`}
+                  >
+                    {/* カテゴリバッジ */}
+                    <span className="mb-3 inline-block rounded-full bg-badge-bg px-2.5 py-0.5 text-xs font-semibold text-badge-text">
+                      {item.category}
+                    </span>
+
+                    {/* 質問 */}
+                    <h2 className="mb-3 text-base font-bold text-text">
+                      {item.question}
+                    </h2>
+
+                    {/* 回答 */}
+                    <p className="mb-4 text-sm leading-relaxed text-text-muted">
+                      {item.answer}
+                    </p>
+
+                    {/* 出典 */}
+                    <div className="rounded-xl bg-[#f3fbfe] border border-[rgba(0,134,179,0.12)] px-3 py-2 text-xs text-text-light">
+                      <span className="font-semibold text-badge-text">出典：</span>
+                      {item.source}
+                    </div>
+                  </div>
+                ))}
+              </>
             ) : (
-              <div className="rounded-2xl bg-white p-6 text-center shadow-[0_18px_45px_rgba(0,73,116,0.15)] border border-card-border">
+              <div className="rounded-2xl bg-white p-4 sm:p-6 text-center shadow-[0_18px_45px_rgba(0,73,116,0.15)] border border-card-border animate-fade-in-up">
                 <p className="text-sm text-text-muted">
                   「{result.query}」に一致するFAQが見つかりませんでした。
                 </p>
@@ -163,7 +195,7 @@ export default function Home() {
             <div className="text-center">
               <button
                 onClick={handleReset}
-                className="mt-2 rounded-full border border-card-border bg-white px-6 py-2.5 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-badge-bg"
+                className="mt-2 rounded-full border border-card-border bg-white px-6 py-2.5 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-badge-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
               >
                 別の質問をする
               </button>
@@ -171,8 +203,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* よくある質問（検索前に表示） */}
-        {!result && (
+        {/* よくある質問（検索前・検索中以外に表示） */}
+        {!result && !isSearching && (
           <div className="mt-8">
             <p className="mb-3 text-center text-xs font-semibold tracking-widest text-text-light uppercase">
               よくある質問
@@ -182,7 +214,7 @@ export default function Home() {
                 <button
                   key={q}
                   onClick={() => handleExampleClick(q)}
-                  className="flex w-full items-center gap-3 rounded-xl bg-white/70 px-4 py-3 text-left text-sm text-text transition-colors hover:bg-white border border-card-border"
+                  className="flex w-full items-center gap-3 rounded-xl bg-white/70 px-4 py-3 text-left text-sm text-text transition-all hover:bg-white hover:-translate-y-0.5 hover:shadow-md border border-card-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                 >
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-light text-xs text-white shadow-[0_4px_10px_rgba(0,160,176,0.3)]">
                     ?
