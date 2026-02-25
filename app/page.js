@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { searchFAQ } from "./lib/search";
 
 const EXAMPLE_QUESTIONS = [
@@ -11,11 +11,32 @@ const EXAMPLE_QUESTIONS = [
   "リモートワークの申請方法は？",
 ];
 
+const HISTORY_KEY = "faq-search-history";
+const MAX_HISTORY = 5;
+
+function getHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(history) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [history, setHistory] = useState([]);
   const composingRef = useRef(false);
+
+  useEffect(() => {
+    setHistory(getHistory());
+  }, []);
 
   async function handleSearch(searchQuery) {
     const q = searchQuery || query;
@@ -25,9 +46,24 @@ export default function Home() {
     try {
       const data = await searchFAQ(q);
       setResult(data);
+
+      const updated = [q, ...history.filter((h) => h !== q)].slice(0, MAX_HISTORY);
+      saveHistory(updated);
+      setHistory(updated);
     } finally {
       setIsSearching(false);
     }
+  }
+
+  function removeHistoryItem(q) {
+    const updated = history.filter((h) => h !== q);
+    saveHistory(updated);
+    setHistory(updated);
+  }
+
+  function clearHistory() {
+    saveHistory([]);
+    setHistory([]);
   }
 
   function handleReset() {
@@ -199,6 +235,64 @@ export default function Home() {
               >
                 別の質問をする
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* 最近の検索（検索前・検索中以外で履歴がある場合） */}
+        {!result && !isSearching && history.length > 0 && (
+          <div className="mt-8">
+            <div className="mb-3 flex items-center justify-between px-1">
+              <p className="text-xs font-semibold tracking-widest text-text-light uppercase">
+                最近の検索
+              </p>
+              <button
+                onClick={clearHistory}
+                className="text-xs text-text-light hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+              >
+                クリア
+              </button>
+            </div>
+            <div className="space-y-2">
+              {history.map((q) => (
+                <div
+                  key={q}
+                  className="group flex w-full items-center gap-3 rounded-xl bg-white/70 px-4 py-3 text-left text-sm text-text border border-card-border transition-all hover:bg-white hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <svg
+                    className="h-4 w-4 shrink-0 text-text-light"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <button
+                    onClick={() => handleExampleClick(q)}
+                    className="flex-1 text-left truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                  >
+                    {q}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeHistoryItem(q);
+                    }}
+                    className="ml-auto shrink-0 text-text-light opacity-0 group-hover:opacity-100 hover:text-text transition-all focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                    aria-label={`「${q}」を履歴から削除`}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         )}
