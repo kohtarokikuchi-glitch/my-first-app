@@ -239,60 +239,68 @@ export default function Home() {
           </div>
         )}
 
-        {/* 最近の検索（検索前・検索中以外で履歴がある場合） */}
-        {!result && !isSearching && history.length > 0 && (
+        {/* 最近の検索（検索前・検索中以外で常に表示。履歴がなければ空状態） */}
+        {!result && !isSearching && (
           <div className="mt-8">
             <div className="mb-3 flex items-center justify-between px-1">
               <p className="text-xs font-semibold tracking-widest text-text-light uppercase">
                 最近の検索
               </p>
-              <button
-                onClick={clearHistory}
-                className="text-xs text-text-light hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
-              >
-                クリア
-              </button>
+              {history.length > 0 && (
+                <button
+                  onClick={clearHistory}
+                  className="text-xs text-text-light hover:text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                >
+                  クリア
+                </button>
+              )}
             </div>
             <div className="space-y-2">
-              {history.map((q) => (
-                <div
-                  key={q}
-                  className="group flex w-full items-center gap-3 rounded-xl bg-white/70 px-4 py-3 text-left text-sm text-text border border-card-border transition-all hover:bg-white hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <svg
-                    className="h-4 w-4 shrink-0 text-text-light"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
+              {history.length > 0 ? (
+                history.map((q) => (
+                  <div
+                    key={q}
+                    className="group flex w-full items-center gap-3 rounded-xl bg-white/70 px-4 py-3 text-left text-sm text-text border border-card-border transition-all hover:bg-white hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <button
-                    onClick={() => handleExampleClick(q)}
-                    className="flex-1 text-left truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
-                  >
-                    {q}
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeHistoryItem(q);
-                    }}
-                    className="ml-auto shrink-0 text-text-light opacity-0 group-hover:opacity-100 hover:text-text transition-all focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
-                    aria-label={`「${q}」を履歴から削除`}
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="h-4 w-4 shrink-0 text-text-light"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
-                  </button>
-                </div>
-              ))}
+                    <button
+                      onClick={() => handleExampleClick(q)}
+                      className="flex-1 text-left truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                    >
+                      {q}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeHistoryItem(q);
+                      }}
+                      className="ml-auto shrink-0 text-text-light opacity-0 group-hover:opacity-100 hover:text-text transition-all focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                      aria-label={`「${q}」を履歴から削除`}
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="rounded-xl border border-card-border bg-white/50 px-4 py-3 text-center text-sm text-text-muted">
+                  まだ検索履歴はありません
+                </p>
+              )}
             </div>
           </div>
         )}
