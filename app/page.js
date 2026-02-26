@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { searchFAQ } from "./lib/search";
 
 const EXAMPLE_QUESTIONS = [
@@ -87,13 +88,14 @@ export default function Home() {
       <main className="w-full max-w-lg">
         {/* ヘッダー: バッジ + タイトル */}
         <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-badge-bg px-2.5 py-1 text-xs font-semibold tracking-wide text-badge-text uppercase">
-            <span
-              className="h-2 w-2 rounded-full bg-primary-light shadow-[0_0_0_4px_rgba(0,184,196,0.25)]"
-              aria-hidden="true"
-            />
-            <span>Medical Horizon</span>
-          </div>
+          <Image
+            src="/MedicalHorizon_logo.png"
+            alt="Medical Horizon"
+            width={120}
+            height={120}
+            className="mx-auto mb-4 mix-blend-multiply"
+            priority
+          />
           <h1 className="text-xl font-bold tracking-wide text-text sm:text-2xl">
             FAQ検索ボット
           </h1>
